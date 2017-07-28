@@ -13,7 +13,7 @@ And
 
     bundle install
 
-Restart your Dradis server and you should be good to go.
+Restart your Dradis server, head over to `/configurations` and input your webhook URL and you should be good to go.
 
 
 ## More information

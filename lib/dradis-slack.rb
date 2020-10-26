@@ -9,5 +9,6 @@ module Dradis
   end
 end
 
+require 'dradis/plugins/slack/activity_subscriber'
 require 'dradis/plugins/slack/engine'
 require 'dradis/plugins/slack/version'

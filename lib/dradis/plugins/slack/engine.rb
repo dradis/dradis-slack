@@ -12,13 +12,8 @@ module Dradis::Plugins::Slack
     end
 
 
-    ActiveSupport::Notifications.subscribe('activity') do |_, _, _, _, payload|
-      action    = payload[:action].to_s
-      trackable = payload[:trackable]
-      user      = payload[:user]
-
-      notifier  = Slack::Notifier.new(settings.webhook, icon_url: settings.icon)
-      notifier.ping "[Dradis activity] #{trackable.class.name} #{action.sub(/e?\z/, 'ed')} by #{user}"
+    ActiveSupport::Notifications.subscribe('activity') do |event|
+      ActivitySubscriber.handle(event)
     end
   end
 end

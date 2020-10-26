@@ -55,16 +55,17 @@ module Dradis::Plugins::Slack
 
     def self.url_for(activity, options)
       components = [activity.project]
+
       case activity.trackable
-      when Board, Issue, Node,
-        components << activity.trackable
       when Card
         card = activity.trackable
-        components << *[card.list.board, card.list, card]
+        components << card.list.board
+        components << card.list
       when Evidence, Note
-        components << *[activity.trackable.node, activity.trackable]
+        components << activity.trackable.node
       end
 
+      components << activity.trackable
       polymorphic_url(components, options)
     end
   end

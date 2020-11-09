@@ -6,7 +6,7 @@ module Dradis::Plugins::Slack
       Slack::Notifier.new(Dradis::Plugins::Slack::Engine.settings.webhook).post(
         # icon_emoji: ':robot_face:',
         icon_url: Dradis::Plugins::Slack::Engine.settings.icon,
-        text: "[Dradis] #{trackable.class.name} #{action.sub(/e?\z/, 'ed')} by #{user}",
+        text: "[Dradis] #{activity.trackable.class.name} #{activity.action.sub(/e?\z/, 'ed')} by #{activity.user.name}",
         fields: fields_for(activity)
       )
 
@@ -18,7 +18,7 @@ module Dradis::Plugins::Slack
 
       options = ActionMailer::Base.default_url_options
       url_helpers = Rails.application.routes.url_helpers
-      item_url = url_for(activity, options)
+      item_url = url_for(activity, options, url_helpers)
 
       # Project
       if activity.project
@@ -33,6 +33,8 @@ module Dradis::Plugins::Slack
                 activity.trackable.title
               elsif activity.trackable.respond_to?(:label) && activity.trackable.label?
                 activity.trackable.label
+              elsif activity.trackable_type == 'Comment'
+                activity.trackable.commentable.title
               end
 
       if title.present?
@@ -43,7 +45,7 @@ module Dradis::Plugins::Slack
       end
 
       # Content (for comments)
-      if activity.trackable == 'Comment'
+      if activity.trackable_type == 'Comment'
         result << {
           title: 'Content',
           value: activity.trackable.content
@@ -53,7 +55,7 @@ module Dradis::Plugins::Slack
       result
     end
 
-    def self.url_for(activity, options)
+    def self.url_for(activity, options, helpers)
       components = [activity.project]
 
       case activity.trackable
@@ -66,7 +68,7 @@ module Dradis::Plugins::Slack
       end
 
       components << activity.trackable
-      polymorphic_url(components, options)
+      helpers.polymorphic_url(components, options)
     end
   end
 end

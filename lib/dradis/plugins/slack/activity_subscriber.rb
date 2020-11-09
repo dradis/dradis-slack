@@ -58,7 +58,10 @@ module Dradis::Plugins::Slack
     def self.url_for(activity, options, helpers)
       components = [activity.project]
 
-      case activity.trackable
+      target = activity.trackable_type == 'Comment' ? activity.trackable.commentable : activity.trackable
+
+      # Don't need Issue because L74
+      case target
       when Card
         card = activity.trackable
         components << card.list.board

@@ -12,8 +12,8 @@ module Dradis::Plugins::Slack
     end
 
 
-    ActiveSupport::Notifications.subscribe('activity') do |event|
-      ActivitySubscriber.handle(event)
+    ActiveSupport::Notifications.subscribe('activity') do |_, _, _, _, payload|
+      ActivitySubscriber.handle(payload)
     end
   end
 end

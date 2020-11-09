@@ -1,7 +1,7 @@
 module Dradis::Plugins::Slack
   class ActivitySubscriber
-    def self.handle(event)
-      activity = event.payload[:activity]
+    def self.handle(payload)
+      activity = payload[:activity]
 
       Slack::Notifier.new(settings.webhook).post(
         # icon_emoji: ':robot_face:',

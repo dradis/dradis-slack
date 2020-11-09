@@ -63,14 +63,16 @@ module Dradis::Plugins::Slack
       # Don't need Issue because L74
       case target
       when Card
-        card = activity.trackable
-        components << card.list.board
-        components << card.list
+        components << target.list.board
+        components << target.list
       when Evidence, Note
-        components << activity.trackable.node
+        # FIXME - ISSUE/NOTE INHERITANCE
+        unless target.is_a?(Issue)
+          components << target.node
+        end
       end
 
-      components << activity.trackable
+      components << target
       helpers.polymorphic_url(components, options)
     end
   end

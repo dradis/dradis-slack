@@ -3,9 +3,9 @@ module Dradis::Plugins::Slack
     def self.handle(payload)
       activity = payload[:activity]
 
-      Slack::Notifier.new(settings.webhook).post(
+      Slack::Notifier.new(Dradis::Plugins::Slack::Engine.settings.webhook).post(
         # icon_emoji: ':robot_face:',
-        icon_url: settings.icon,
+        icon_url: Dradis::Plugins::Slack::Engine.settings.icon,
         text: "[Dradis] #{trackable.class.name} #{action.sub(/e?\z/, 'ed')} by #{user}",
         fields: fields_for(activity)
       )

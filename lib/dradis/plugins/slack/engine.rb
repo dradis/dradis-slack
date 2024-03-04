@@ -11,7 +11,6 @@ module Dradis::Plugins::Slack
       settings.default_webhook = 'https://hooks.slack.com/services/XXXX/YYYY/ZZZZ'
     end
 
-
     ActiveSupport::Notifications.subscribe('activity') do |_, _, _, _, payload|
       ActivitySubscriber.handle(payload)
     end

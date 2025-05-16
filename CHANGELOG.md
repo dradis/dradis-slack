@@ -1,1 +1,2 @@
-## Dradis Framework 3.8 (XXX, 2017) ##
+v4.12.0 (Month 2024)
+  - Update the integration to be compatible with the current Dradis version

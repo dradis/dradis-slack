@@ -1,41 +1,49 @@
 module Dradis::Plugins::Slack
   class ActivitySubscriber
     def self.handle(payload)
-      activity = payload[:activity]
+      action = payload[:action]
+      trackable = payload[:trackable]
+      user = payload[:user]
+
+      text =
+        if trackable
+          "[Dradis] #{trackable.class.name} ID=#{trackable.id} #{action.sub(/e?\z/, 'ed')} by #{user}"
+        else
+          "[Dradis] An item was deleted by #{user}"
+        end
 
       Slack::Notifier.new(Dradis::Plugins::Slack::Engine.settings.webhook).post(
         # icon_emoji: ':robot_face:',
         icon_url: Dradis::Plugins::Slack::Engine.settings.icon,
-        text: "[Dradis] #{activity.trackable.class.name} #{activity.action.sub(/e?\z/, 'ed')} by #{activity.user.name}",
-        fields: fields_for(activity)
+        text: text,
+        fields: trackable ? fields_for(trackable) : []
       )
-
     end
 
     private
-    def self.fields_for(activity)
+    def self.fields_for(trackable)
       result = []
 
       options = ActionMailer::Base.default_url_options
       url_helpers = Rails.application.routes.url_helpers
-      item_url = url_for(activity, options, url_helpers)
+      item_url = url_for(trackable, options, url_helpers)
 
       # Project
-      if activity.project
+      if trackable.project
         result << {
           title: 'Project',
-          value: "<#{url_helpers.project_url(activity.project, options)}|#{activity.project.name}>"
+          value: "<#{url_helpers.project_url(trackable.project, options)}|#{trackable.project.name}>"
         }
       end
 
       # Title
-      title = if activity.trackable.respond_to?(:title) && activity.trackable.title?
-                activity.trackable.title
-              elsif activity.trackable.respond_to?(:label) && activity.trackable.label?
-                activity.trackable.label
-              elsif activity.trackable_type == 'Comment'
-                activity.trackable.commentable.title
-              end
+      title = if trackable.respond_to?(:title) && trackable.title?
+        trackable.title
+              elsif trackable.respond_to?(:label) && trackable.label?
+                trackable.label
+              elsif trackable.class.name == 'Comment'
+                trackable.commentable.title
+      end
 
       if title.present?
         result << {
@@ -45,20 +53,20 @@ module Dradis::Plugins::Slack
       end
 
       # Content (for comments)
-      if activity.trackable_type == 'Comment'
+      if trackable.class.name == 'Comment'
         result << {
           title: 'Content',
-          value: activity.trackable.content
+          value: trackable.content
         }
       end
 
       result
     end
 
-    def self.url_for(activity, options, helpers)
-      components = [activity.project]
+    def self.url_for(trackable, options, helpers)
+      components = [trackable.project]
 
-      target = activity.trackable_type == 'Comment' ? activity.trackable.commentable : activity.trackable
+      target = trackable.class.name == 'Comment' ? trackable.commentable : trackable
 
       # Don't need Issue because L74
       case target
